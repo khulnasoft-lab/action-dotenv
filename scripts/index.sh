@@ -1,9 +1,17 @@
 #!/bin/bash
 
-if [[ $GITHUB_EVENT_NAME != "push" && $GITHUB_EVENT_NAME != "pull_request" ]]; then
-  echo "::warning title=action-name::action ran on unsupported event ${GITHUB_EVENT_NAME}"
+if [[ ! -f $1 ]]; then
+  echo "::debug::${1} file does not exist"
   exit 0
 fi
 
-echo "bar=baz" >> "${GITHUB_OUTPUT}"
-
+cat .env | while read line || [[ -n $line ]];
+do
+  [[ ${line//[[:space:]]/} =~ ^#.* || -z "$line" ]] && continue
+  echo $line | tr "=" "\n" | while read -r key; do
+  read -r value
+    if [[ ! -z "${key}" && ! -z "${value}" ]]; then
+      echo "${key}=${value}" >> $GITHUB_ENV
+    fi
+  done
+done
